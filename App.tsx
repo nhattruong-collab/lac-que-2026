@@ -114,12 +114,16 @@ const App: React.FC = () => {
     setIsCapturing(true); // Bật chế độ chụp
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Đợi render layout mới lâu hơn chút để đảm bảo font và layout ổn định
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const canvas = await html2canvas(resultCardRef.current, {
-        scale: 3,
-        backgroundColor: null,
+        scale: 4, // Tăng độ phân giải lên 4x (đủ nét cho Facebook/Instagram)
+        backgroundColor: '#fffef0', // Màu nền cứng, tránh trong suốt
         useCORS: true,
+        logging: false,
+        // Cố gắng lấy chiều rộng tốt hơn nếu đang trên mobile
+        windowWidth: resultCardRef.current.scrollWidth > 500 ? resultCardRef.current.scrollWidth : 500
       });
 
       // Tạo tên file
@@ -246,7 +250,10 @@ const App: React.FC = () => {
           {appState === AppState.RESULT && result && (
             <div className="flex flex-col items-center animate-fadeIn w-full">
               {/* Thêm ref vào div này để html2canvas chụp đúng phần thẻ kết quả */}
-              <div ref={resultCardRef} className="bg-[#fffef0] text-red-950 p-6 rounded-xl shadow-[0_10px_50px_rgba(0,0,0,0.5)] w-full border-4 border-double border-red-800 relative overflow-hidden">
+              <div 
+                  ref={resultCardRef} 
+                  className={`bg-[#fffef0] text-red-950 p-6 rounded-xl shadow-[0_10px_50px_rgba(0,0,0,0.5)] w-full border-4 border-double border-red-800 relative overflow-hidden transition-all ${isCapturing ? 'min-w-[500px] max-w-[600px] mx-auto' : 'w-full'}`}
+              >
                  {/* Họa tiết nền quẻ */}
                  <div className="absolute top-0 right-0 p-2 opacity-10">
                     <Coin className="w-20 h-20" />
@@ -293,9 +300,10 @@ const App: React.FC = () => {
                         { l: 'SỐ TÀI', v: result.interpretation.luckyNumber, c: 'text-rose-700 bg-rose-50' },
                         { l: 'GIỜ VÀNG', v: result.interpretation.luckyHour, c: 'text-amber-700 bg-amber-50' }
                       ].map((m, i) => (
-                        <div key={i} className={`${m.c} p-1.5 rounded-lg border border-current/20 text-center shadow-sm`}>
+                        <div key={i} className={`${m.c} p-1.5 rounded-lg border border-current/20 text-center shadow-sm flex flex-col justify-center`}>
                            <span className="text-[8px] uppercase font-black block mb-0.5 opacity-70">{m.l}</span>
-                           <p className="text-[10px] font-black truncate">{m.v}</p>
+                           {/* Xóa class truncate, thêm break-words và leading-tight để xuống dòng */}
+                           <p className="text-[10px] font-black leading-tight break-words">{m.v}</p>
                         </div>
                       ))}
                     </div>
