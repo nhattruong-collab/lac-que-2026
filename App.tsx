@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AppState, UserInput, FortuneResult, FortuneData, FortuneContent } from './types';
 import { FORTUNES } from './constants';
 import { getFortuneInterpretation } from './services/geminiService';
-import { Lantern, BlossomBranch, Coin, ScrollIcon, LuckyBagIcon, LotusIcon, GourdIcon, FallingDecor } from './components/TetDecor';
+import { Lantern, DecorativeBranch, Coin, ScrollIcon, LuckyBagIcon, LotusIcon, GourdIcon, FallingDecor } from './components/TetDecor';
 import { HorseAnimation } from './components/HorseAnimation';
 import html2canvas from 'html2canvas';
 
@@ -171,16 +171,26 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen font-body text-white overflow-x-hidden relative flex flex-col items-center py-8 px-4">
-      {/* Trang trí nền */}
-      <Lantern className="absolute top-0 left-4 animate-swing origin-top" />
-      <Lantern className="absolute top-0 right-4 animate-swing origin-top delay-700" />
-      <BlossomBranch className="absolute top-10 -left-10 opacity-70" />
-      <BlossomBranch className="absolute top-10 -right-10 opacity-70" flipped />
+      {/* --- CÁC CHI TIẾT TRANG TRÍ MỚI --- */}
+      
+      {/* Góc trên Trái: Hoa Đào (Hồng) */}
+      <DecorativeBranch type="peach" position="top-left" className="absolute top-0 left-0 w-32 md:w-64 h-auto z-0 opacity-90" />
+      
+      {/* Góc trên Phải: Hoa Mai (Vàng) */}
+      <DecorativeBranch type="apricot" position="top-right" className="absolute top-0 right-0 w-32 md:w-64 h-auto z-0 opacity-90" />
+      
+      {/* Góc dưới: Thêm chút hoa lá nhỏ (ẩn trên mobile bé quá) */}
+      <DecorativeBranch type="apricot" position="bottom-left" className="hidden md:block absolute bottom-0 left-0 w-48 h-auto z-0 opacity-60" />
+      <DecorativeBranch type="peach" position="bottom-right" className="hidden md:block absolute bottom-0 right-0 w-48 h-auto z-0 opacity-60" />
+
+      {/* Lồng đèn vẫn giữ nhưng chỉnh vị trí xíu cho đỡ vướng hoa */}
+      <Lantern className="absolute top-0 left-16 md:left-32 animate-swing origin-top z-1" />
+      <Lantern className="absolute top-0 right-16 md:right-32 animate-swing origin-top delay-700 z-1" />
 
       {/* HIỆU ỨNG MƯA TÀI LỘC - Chỉ hiện khi có kết quả */}
       {appState === AppState.RESULT && <FallingDecor />}
       
-      <header className="text-center z-10 mt-4 mb-8">
+      <header className="text-center z-10 mt-12 mb-8 relative">
         <h1 className="font-display text-5xl md:text-7xl text-tet-gold drop-shadow-[0_2px_10px_rgba(255,215,0,0.5)] mb-2 uppercase">GIEO QUẺ</h1>
         <h2 className="font-display text-2xl md:text-3xl text-white tracking-widest uppercase italic">Mã Đáo Thành Công</h2>
         <p className="text-yellow-200 mt-2 text-sm md:text-base opacity-90 font-bold">"Giải mã vận mệnh - Đón lộc đầu xuân"</p>

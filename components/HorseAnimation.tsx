@@ -108,24 +108,38 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({ isRunning, onFin
             animation: legBack 0.4s ease-in-out infinite;
         }
 
-        /* Dust */
-        .dust-cloud {
+        /* Enhanced Dust Effect */
+        .dust-particle {
             position: absolute;
-            bottom: 10px;
-            left: 20px;
-            width: 50px;
-            height: 20px;
-            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
-            animation: dust 0.4s infinite;
-            opacity: 0;
+            background: radial-gradient(circle, rgba(255,248,220,0.8) 0%, rgba(255,255,255,0) 70%);
             border-radius: 50%;
+            opacity: 0;
             z-index: 5;
+            pointer-events: none;
         }
-        
-        @keyframes dust {
-            0% { transform: scale(0.5) translate(40px, 0); opacity: 0; }
-            30% { opacity: 0.8; }
-            100% { transform: scale(1.8) translate(-50px, -20px); opacity: 0; }
+
+        @keyframes dustKick {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 0.8; }
+            100% { transform: translate(-40px, -25px) scale(2.2); opacity: 0; }
+        }
+
+        .d1 {
+            width: 25px; height: 25px;
+            bottom: 25px; left: 35px;
+            animation: dustKick 0.4s infinite ease-out;
+            animation-delay: 0.05s;
+        }
+        .d2 {
+            width: 18px; height: 18px;
+            bottom: 30px; left: 25px;
+            animation: dustKick 0.4s infinite ease-out;
+            animation-delay: 0.2s;
+        }
+        .d3 {
+            width: 30px; height: 20px;
+            bottom: 20px; left: 45px;
+            animation: dustKick 0.4s infinite ease-out;
+            animation-delay: 0.1s;
         }
       `}</style>
 
@@ -223,8 +237,10 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({ isRunning, onFin
               </svg>
             </div>
             
-            {/* Dust */}
-            <div className="dust-cloud"></div>
+            {/* Enhanced Dust Particles */}
+            <div className="dust-particle d1"></div>
+            <div className="dust-particle d2"></div>
+            <div className="dust-particle d3"></div>
             
             {/* Speech bubble - Fixed positioning */}
              <div className="absolute -top-12 -right-8 animate-bounce bg-white border-2 border-red-500 rounded-xl px-3 py-1 shadow-md z-20 min-w-[120px] text-center">
