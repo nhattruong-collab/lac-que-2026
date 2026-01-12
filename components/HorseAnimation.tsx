@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 
 interface HorseAnimationProps {
@@ -6,7 +7,7 @@ interface HorseAnimationProps {
 }
 
 export const HorseAnimation: React.FC<HorseAnimationProps> = ({ isRunning, onFinish }) => {
-  // Cấu hình: Chạy 2 vòng thay vì 3. Tổng thời gian 5s là đẹp để chờ AI.
+  // Cấu hình: Chạy 2 vòng.
   const LAPS = 2;
   const LAP_DURATION_MS = 2500; 
   const TOTAL_DURATION = LAPS * LAP_DURATION_MS;
@@ -24,227 +25,273 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({ isRunning, onFin
     <div className="w-full h-48 relative overflow-hidden flex items-center bg-transparent group">
       
       <style>{`
-        /* Animation di chuyển ngang màn hình */
         @keyframes runAcrossLoop {
-          0% { left: -180px; }
+          0% { left: -200px; }
           100% { left: 100%; }
         }
         
-        /* Hiệu ứng ngựa phi (nhún nhảy cute) */
-        @keyframes gallop {
+        /* Gallop: Whole body bounces and rocks */
+        @keyframes gallopBody {
           0% { transform: translateY(0) rotate(0deg); }
-          25% { transform: translateY(-10px) rotate(-5deg); }
-          50% { transform: translateY(0) rotate(0deg); }
-          75% { transform: translateY(-5px) rotate(3deg); }
+          25% { transform: translateY(-15px) rotate(-5deg); } /* Lên cao, chúc đầu xuống */
+          50% { transform: translateY(-5px) rotate(0deg); }
+          75% { transform: translateY(-10px) rotate(5deg); } /* Lên nhẹ, ngẩng đầu */
           100% { transform: translateY(0) rotate(0deg); }
         }
+
+        /* Head bobbing independently */
+        @keyframes headBob {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(-8deg); }
+          75% { transform: rotate(5deg); }
+        }
         
-        /* Animation đuôi vẫy */
+        /* Tail wagging vigorously */
         @keyframes tailWag {
             0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(15deg); }
+            25% { transform: rotate(25deg); }
+            75% { transform: rotate(-15deg); }
+        }
+
+        /* Leg animations */
+        @keyframes legFront {
+            0% { transform: rotate(0deg); }
+            30% { transform: rotate(-45deg); } /* Vươn tới trước */
+            60% { transform: rotate(10deg); } /* Thu về */
+            100% { transform: rotate(0deg); }
+        }
+        
+        @keyframes legBack {
+            0% { transform: rotate(0deg); }
+            30% { transform: rotate(35deg); } /* Đạp ra sau */
+            60% { transform: rotate(-10deg); } /* Co lại */
+            100% { transform: rotate(0deg); }
         }
 
         .horse-wrapper {
-          width: 150px; /* Điều chỉnh kích thước cho phù hợp tỷ lệ chibi */
-          height: 150px;
+          width: 160px;
+          height: 160px;
           position: absolute;
           z-index: 10;
-          /* Chạy animation di chuyển lặp lại LAPS lần */
           animation: runAcrossLoop ${LAP_DURATION_MS}ms linear ${LAPS};
         }
 
-        .horse-svg-container {
+        .horse-body-container {
           width: 100%;
           height: 100%;
-          /* Animation phi ngựa tại chỗ */
-          animation: gallop 0.4s ease-in-out infinite;
-          transform-origin: bottom center;
+          animation: gallopBody 0.4s ease-in-out infinite;
+          transform-origin: center center;
+        }
+        
+        .horse-head {
+            transform-box: fill-box;
+            transform-origin: 20% 80%; /* Pivot at neck base roughly */
+            animation: headBob 0.4s ease-in-out infinite;
+            animation-delay: 0.1s; /* Slight offset from body */
         }
         
         .horse-tail {
-            transform-origin: 20px 80px;
-            animation: tailWag 0.4s ease-in-out infinite;
+            transform-box: fill-box;
+            transform-origin: top left;
+            animation: tailWag 0.3s ease-in-out infinite; /* Faster than gallop */
         }
 
-        /* Bụi bay */
+        .leg-front {
+            transform-box: fill-box;
+            transform-origin: top center;
+            animation: legFront 0.4s ease-in-out infinite;
+        }
+        
+        .leg-back {
+            transform-box: fill-box;
+            transform-origin: top center;
+            animation: legBack 0.4s ease-in-out infinite;
+        }
+
+        /* Dust */
         .dust-cloud {
             position: absolute;
-            bottom: 20px;
-            left: 10px;
-            width: 40px;
+            bottom: 10px;
+            left: 20px;
+            width: 50px;
             height: 20px;
-            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
             animation: dust 0.4s infinite;
-            opacity: 0.8;
+            opacity: 0;
             border-radius: 50%;
             z-index: 5;
         }
         
         @keyframes dust {
-            0% { transform: scale(0.5) translate(30px, 0); opacity: 0; }
-            50% { opacity: 0.8; }
-            100% { transform: scale(1.5) translate(-40px, -10px); opacity: 0; }
+            0% { transform: scale(0.5) translate(40px, 0); opacity: 0; }
+            30% { opacity: 0.8; }
+            100% { transform: scale(1.8) translate(-50px, -20px); opacity: 0; }
         }
       `}</style>
 
-      {/* Đường chạy */}
+      {/* Track */}
       <div className="absolute bottom-6 w-full h-2 bg-yellow-900/20 rounded-full overflow-hidden">
          <div className="w-full h-full bg-yellow-500/10 animate-pulse"></div>
       </div>
 
       {isRunning ? (
-        <div className="horse-wrapper top-6">
-            <div className="horse-svg-container">
-              {/* SVG CHIBI HORSE - Được vẽ chi tiết dựa trên ảnh mẫu */}
+        <div className="horse-wrapper top-4">
+            <div className="horse-body-container">
               <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-lg" xmlns="http://www.w3.org/2000/svg">
-                {/* 1. Cái đuôi (Nâu đậm) - Layer dưới cùng */}
-                <path className="horse-tail" d="M30,100 Q10,90 10,120 Q10,140 40,130 Z" fill="#5D4037" stroke="#3E2723" strokeWidth="2" />
+                
+                {/* TAIL - Layer 1 */}
+                <path className="horse-tail" d="M30,105 Q10,95 10,125 Q10,145 40,135 Z" fill="#5D4037" stroke="#3E2723" strokeWidth="2" />
 
-                {/* 2. Chân sau (Vàng + Móng nâu) */}
+                {/* BACK LEGS - Layer 2 */}
                 <g transform="translate(40, 130)">
-                    {/* Chân sau trái */}
-                    <path d="M10,0 L0,25 L15,25 L20,0 Z" fill="#FFC857" /> 
-                    <path d="M0,25 L15,25 L14,32 L1,32 Z" fill="#3E2723" />
+                    <g className="leg-back" style={{ animationDelay: '0.1s' }}>
+                       <path d="M10,0 L0,25 L15,25 L20,0 Z" fill="#FFC857" /> 
+                       <path d="M0,25 L15,25 L14,32 L1,32 Z" fill="#3E2723" />
+                    </g>
                 </g>
                 <g transform="translate(60, 135)">
-                    {/* Chân sau phải */}
-                    <path d="M10,0 L0,20 L15,20 L20,0 Z" fill="#FFC857" />
-                    <path d="M0,20 L15,20 L14,27 L1,27 Z" fill="#3E2723" />
+                    <g className="leg-back">
+                       <path d="M10,0 L0,20 L15,20 L20,0 Z" fill="#FFC857" />
+                       <path d="M0,20 L15,20 L14,27 L1,27 Z" fill="#3E2723" />
+                    </g>
                 </g>
 
-                {/* 3. Thân (Vàng cam tròn trịa) */}
-                <ellipse cx="80" cy="110" rx="45" ry="35" fill="#FFC857" />
-                {/* Bụng sáng hơn một chút */}
-                <path d="M60,135 Q80,145 100,135" fill="none" stroke="#FCE4B8" strokeWidth="10" strokeLinecap="round" />
+                {/* BODY - Layer 3 */}
+                <ellipse cx="80" cy="110" rx="48" ry="38" fill="#FFC857" />
+                <path d="M60,138 Q80,148 100,138" fill="none" stroke="#FCE4B8" strokeWidth="10" strokeLinecap="round" />
+                
+                {/* Yếm đỏ */}
+                <path d="M90,85 Q115,115 125,95 L110,80 Z" fill="#D32F2F" />
+                <circle cx="110" cy="105" r="8" fill="#FFD700" stroke="#B8860B" strokeWidth="1" />
 
-                {/* 4. Khăn đỏ/Yếm + Chuông */}
-                <path d="M90,90 Q110,110 120,95 L110,85 Z" fill="#D32F2F" />
-                <circle cx="105" cy="110" r="8" fill="#FFD700" stroke="#B8860B" strokeWidth="1" /> {/* Chuông */}
-
-                {/* 5. Chân trước (Vàng + Móng nâu) - Đang giơ lên */}
-                <g transform="translate(90, 120) rotate(-30)">
-                    <path d="M10,0 L0,25 L15,25 L20,0 Z" fill="#FFC857" />
-                    <path d="M0,25 L15,25 L14,32 L1,32 Z" fill="#3E2723" />
+                {/* FRONT LEGS - Layer 4 */}
+                <g transform="translate(90, 120) rotate(-10)">
+                    <g className="leg-front">
+                        <path d="M10,0 L0,25 L15,25 L20,0 Z" fill="#FFC857" />
+                        <path d="M0,25 L15,25 L14,32 L1,32 Z" fill="#3E2723" />
+                    </g>
                 </g>
-                <g transform="translate(110, 110) rotate(-45)">
-                    <path d="M10,0 L0,25 L15,25 L20,0 Z" fill="#FFC857" />
-                    <path d="M0,25 L15,25 L14,32 L1,32 Z" fill="#3E2723" />
+                <g transform="translate(110, 110) rotate(-10)">
+                    <g className="leg-front" style={{ animationDelay: '0.2s' }}>
+                        <path d="M10,0 L0,25 L15,25 L20,0 Z" fill="#FFC857" />
+                        <path d="M0,25 L15,25 L14,32 L1,32 Z" fill="#3E2723" />
+                    </g>
                 </g>
 
-                {/* 6. Đầu (Vàng cam) */}
+                {/* HEAD - Layer 5 */}
                 <g transform="translate(90, 40)">
-                    {/* Bờm sau (Nâu) */}
-                    <path d="M-10,20 Q-25,30 -20,60 L10,50 Z" fill="#5D4037" />
-                    
-                    {/* Khuôn mặt */}
-                    <rect x="0" y="0" width="70" height="65" rx="25" ry="25" fill="#FFC857" />
-                    
-                    {/* Mõm (Kem sáng) */}
-                    <ellipse cx="45" cy="45" rx="22" ry="18" fill="#FFF8E1" />
-                    
-                    {/* Mũi (Nâu nhỏ) */}
-                    <circle cx="40" cy="40" r="2" fill="#3E2723" />
-                    <circle cx="50" cy="40" r="2" fill="#3E2723" />
-                    
-                    {/* Miệng (Cười D) */}
-                    <path d="M38,50 Q45,58 52,50" fill="#D32F2F" stroke="#3E2723" strokeWidth="1" />
+                    <g className="horse-head">
+                        {/* Bờm */}
+                        <path d="M-10,20 Q-25,30 -20,60 L10,50 Z" fill="#5D4037" />
+                        
+                        {/* Mặt */}
+                        <rect x="0" y="0" width="70" height="65" rx="25" ry="25" fill="#FFC857" />
+                        <ellipse cx="45" cy="45" rx="22" ry="18" fill="#FFF8E1" />
+                        
+                        {/* Mũi */}
+                        <circle cx="40" cy="40" r="2" fill="#3E2723" />
+                        <circle cx="50" cy="40" r="2" fill="#3E2723" />
+                        <path d="M38,50 Q45,58 52,50" fill="#D32F2F" stroke="#3E2723" strokeWidth="1" />
 
-                    {/* Má hồng */}
-                    <ellipse cx="10" cy="45" rx="6" ry="4" fill="#FFAB91" opacity="0.6" />
-                    <ellipse cx="65" cy="40" rx="6" ry="4" fill="#FFAB91" opacity="0.6" />
+                        {/* Má hồng */}
+                        <ellipse cx="10" cy="45" rx="6" ry="4" fill="#FFAB91" opacity="0.6" />
+                        <ellipse cx="65" cy="40" rx="6" ry="4" fill="#FFAB91" opacity="0.6" />
 
-                    {/* Mắt (Đen to tròn có đốm trắng) */}
-                    <circle cx="15" cy="30" r="6" fill="#212121" />
-                    <circle cx="17" cy="28" r="2" fill="white" />
-                    
-                    <circle cx="55" cy="30" r="6" fill="#212121" />
-                    <circle cx="57" cy="28" r="2" fill="white" />
+                        {/* Mắt */}
+                        <circle cx="15" cy="30" r="6" fill="#212121" />
+                        <circle cx="17" cy="28" r="2" fill="white" />
+                        <circle cx="55" cy="30" r="6" fill="#212121" />
+                        <circle cx="57" cy="28" r="2" fill="white" />
 
-                    {/* Bờm mái (Nâu) */}
-                    <path d="M10,5 Q20,-5 35,5 Q50,-5 60,10" fill="#5D4037" stroke="#5D4037" strokeWidth="8" strokeLinecap="round" />
+                        {/* Tóc/Bờm trước */}
+                        <path d="M10,5 Q20,-5 35,5 Q50,-5 60,10" fill="#5D4037" stroke="#5D4037" strokeWidth="8" strokeLinecap="round" />
+                        
+                        {/* Tai */}
+                        <path d="M10,5 Q0,-10 15,-10 Z" fill="#FFC857" stroke="#E6A63E" strokeWidth="2" />
+                        <path d="M55,5 Q65,-10 50,-10 Z" fill="#FFC857" stroke="#E6A63E" strokeWidth="2" />
 
-                    {/* Tai */}
-                    <path d="M10,5 Q0,-10 15,-10 Z" fill="#FFC857" stroke="#E6A63E" strokeWidth="2" />
-                    <path d="M55,5 Q65,-10 50,-10 Z" fill="#FFC857" stroke="#E6A63E" strokeWidth="2" />
-
-                    {/* Hoa trên đầu (Vàng + Cam) */}
-                    <g transform="translate(35, -5)">
-                         <circle cx="0" cy="0" r="5" fill="#FF9800" />
-                         <circle cx="0" cy="-8" r="5" fill="#FFEB3B" />
-                         <circle cx="8" cy="0" r="5" fill="#FFEB3B" />
-                         <circle cx="0" cy="8" r="5" fill="#FFEB3B" />
-                         <circle cx="-8" cy="0" r="5" fill="#FFEB3B" />
+                        {/* Hoa mai trên đầu */}
+                        <g transform="translate(35, -5)">
+                            <circle cx="0" cy="0" r="5" fill="#FF9800" />
+                            <circle cx="0" cy="-8" r="5" fill="#FFEB3B" />
+                            <circle cx="8" cy="0" r="5" fill="#FFEB3B" />
+                            <circle cx="0" cy="8" r="5" fill="#FFEB3B" />
+                            <circle cx="-8" cy="0" r="5" fill="#FFEB3B" />
+                        </g>
                     </g>
                 </g>
               </svg>
             </div>
             
-            {/* Hiệu ứng bụi */}
+            {/* Dust */}
             <div className="dust-cloud"></div>
             
-             {/* Bóng nói */}
-             <div className="absolute -top-6 -right-4 animate-bounce bg-white border-2 border-red-500 rounded-xl px-3 py-1 shadow-md z-20">
+            {/* Speech bubble */}
+             <div className="absolute -top-8 -right-6 animate-bounce bg-white border-2 border-red-500 rounded-xl px-3 py-1 shadow-md z-20">
                  <span className="text-xs text-red-600 font-bold whitespace-nowrap">
-                    Lộc về! Lộc về! 🌸
+                    Lộc tới! Lộc tới! 🧧
                  </span>
              </div>
         </div>
       ) : (
         <div className="w-full flex justify-center opacity-90 animate-bounce-slow">
            <div className="w-40 h-40">
-              {/* SVG TĨNH (Đứng yên) */}
+             {/* Static version: Copy of SVG but without animations and with 'standing' legs */}
               <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-md" xmlns="http://www.w3.org/2000/svg">
-                {/* Copy y nguyên cấu trúc trên nhưng không có group transform cho chân để đứng thẳng */}
-                <path d="M30,100 Q10,90 10,120 Q10,140 40,130 Z" fill="#5D4037" stroke="#3E2723" strokeWidth="2" />
+                {/* Tail */}
+                <path d="M30,105 Q10,95 10,125 Q10,145 40,135 Z" fill="#5D4037" stroke="#3E2723" strokeWidth="2" />
 
-                <g transform="translate(40, 135)"> {/* Chân sau đứng */}
+                {/* Back Legs Standing */}
+                <g transform="translate(40, 135)">
                     <path d="M10,0 L5,25 L20,25 L20,0 Z" fill="#FFC857" /> 
                     <path d="M5,25 L20,25 L19,32 L6,32 Z" fill="#3E2723" />
                 </g>
-                <g transform="translate(60, 135)"> {/* Chân sau đứng */}
+                <g transform="translate(60, 135)">
                     <path d="M10,0 L5,25 L20,25 L20,0 Z" fill="#FFC857" />
                     <path d="M5,25 L20,25 L19,32 L6,32 Z" fill="#3E2723" />
                 </g>
 
-                <ellipse cx="80" cy="110" rx="45" ry="35" fill="#FFC857" />
-                <path d="M60,135 Q80,145 100,135" fill="none" stroke="#FCE4B8" strokeWidth="10" strokeLinecap="round" />
+                {/* Body */}
+                <ellipse cx="80" cy="110" rx="48" ry="38" fill="#FFC857" />
+                <path d="M60,138 Q80,148 100,138" fill="none" stroke="#FCE4B8" strokeWidth="10" strokeLinecap="round" />
 
-                <path d="M90,90 Q110,110 120,95 L110,85 Z" fill="#D32F2F" />
-                <circle cx="105" cy="110" r="8" fill="#FFD700" stroke="#B8860B" strokeWidth="1" />
+                <path d="M90,85 Q115,115 125,95 L110,80 Z" fill="#D32F2F" />
+                <circle cx="110" cy="105" r="8" fill="#FFD700" stroke="#B8860B" strokeWidth="1" />
 
-                <g transform="translate(90, 135)"> {/* Chân trước đứng */}
+                {/* Front Legs Standing */}
+                <g transform="translate(90, 135)">
                     <path d="M10,0 L5,25 L20,25 L20,0 Z" fill="#FFC857" />
                     <path d="M5,25 L20,25 L19,32 L6,32 Z" fill="#3E2723" />
                 </g>
-                <g transform="translate(110, 135)"> {/* Chân trước đứng */}
+                <g transform="translate(110, 135)">
                     <path d="M10,0 L5,25 L20,25 L20,0 Z" fill="#FFC857" />
                     <path d="M5,25 L20,25 L19,32 L6,32 Z" fill="#3E2723" />
                 </g>
 
+                {/* Head (Static) */}
                 <g transform="translate(90, 40)">
-                    <path d="M-10,20 Q-25,30 -20,60 L10,50 Z" fill="#5D4037" />
-                    <rect x="0" y="0" width="70" height="65" rx="25" ry="25" fill="#FFC857" />
-                    <ellipse cx="45" cy="45" rx="22" ry="18" fill="#FFF8E1" />
-                    <circle cx="40" cy="40" r="2" fill="#3E2723" />
-                    <circle cx="50" cy="40" r="2" fill="#3E2723" />
-                    <path d="M38,50 Q45,58 52,50" fill="#D32F2F" stroke="#3E2723" strokeWidth="1" />
-                    <ellipse cx="10" cy="45" rx="6" ry="4" fill="#FFAB91" opacity="0.6" />
-                    <ellipse cx="65" cy="40" rx="6" ry="4" fill="#FFAB91" opacity="0.6" />
-                    <circle cx="15" cy="30" r="6" fill="#212121" />
-                    <circle cx="17" cy="28" r="2" fill="white" />
-                    <circle cx="55" cy="30" r="6" fill="#212121" />
-                    <circle cx="57" cy="28" r="2" fill="white" />
-                    <path d="M10,5 Q20,-5 35,5 Q50,-5 60,10" fill="#5D4037" stroke="#5D4037" strokeWidth="8" strokeLinecap="round" />
-                    <path d="M10,5 Q0,-10 15,-10 Z" fill="#FFC857" stroke="#E6A63E" strokeWidth="2" />
-                    <path d="M55,5 Q65,-10 50,-10 Z" fill="#FFC857" stroke="#E6A63E" strokeWidth="2" />
-                    <g transform="translate(35, -5)">
-                         <circle cx="0" cy="0" r="5" fill="#FF9800" />
-                         <circle cx="0" cy="-8" r="5" fill="#FFEB3B" />
-                         <circle cx="8" cy="0" r="5" fill="#FFEB3B" />
-                         <circle cx="0" cy="8" r="5" fill="#FFEB3B" />
-                         <circle cx="-8" cy="0" r="5" fill="#FFEB3B" />
-                    </g>
+                     <path d="M-10,20 Q-25,30 -20,60 L10,50 Z" fill="#5D4037" />
+                     <rect x="0" y="0" width="70" height="65" rx="25" ry="25" fill="#FFC857" />
+                     <ellipse cx="45" cy="45" rx="22" ry="18" fill="#FFF8E1" />
+                     <circle cx="40" cy="40" r="2" fill="#3E2723" />
+                     <circle cx="50" cy="40" r="2" fill="#3E2723" />
+                     <path d="M38,50 Q45,58 52,50" fill="#D32F2F" stroke="#3E2723" strokeWidth="1" />
+                     <ellipse cx="10" cy="45" rx="6" ry="4" fill="#FFAB91" opacity="0.6" />
+                     <ellipse cx="65" cy="40" rx="6" ry="4" fill="#FFAB91" opacity="0.6" />
+                     <circle cx="15" cy="30" r="6" fill="#212121" />
+                     <circle cx="17" cy="28" r="2" fill="white" />
+                     <circle cx="55" cy="30" r="6" fill="#212121" />
+                     <circle cx="57" cy="28" r="2" fill="white" />
+                     <path d="M10,5 Q20,-5 35,5 Q50,-5 60,10" fill="#5D4037" stroke="#5D4037" strokeWidth="8" strokeLinecap="round" />
+                     <path d="M10,5 Q0,-10 15,-10 Z" fill="#FFC857" stroke="#E6A63E" strokeWidth="2" />
+                     <path d="M55,5 Q65,-10 50,-10 Z" fill="#FFC857" stroke="#E6A63E" strokeWidth="2" />
+                     <g transform="translate(35, -5)">
+                            <circle cx="0" cy="0" r="5" fill="#FF9800" />
+                            <circle cx="0" cy="-8" r="5" fill="#FFEB3B" />
+                            <circle cx="8" cy="0" r="5" fill="#FFEB3B" />
+                            <circle cx="0" cy="8" r="5" fill="#FFEB3B" />
+                            <circle cx="-8" cy="0" r="5" fill="#FFEB3B" />
+                     </g>
                 </g>
               </svg>
            </div>
