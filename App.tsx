@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AppState, UserInput, FortuneResult, FortuneData, FortuneContent } from './types';
 import { FORTUNES } from './constants';
 import { getFortuneInterpretation } from './services/geminiService';
-import { Lantern, BlossomBranch, Coin } from './components/TetDecor';
+import { Lantern, BlossomBranch, Coin, ScrollIcon, LuckyBagIcon, LotusIcon, GourdIcon } from './components/TetDecor';
 import { HorseAnimation } from './components/HorseAnimation';
 import html2canvas from 'html2canvas';
 
@@ -240,14 +240,14 @@ const App: React.FC = () => {
                     */}
                     <div className={isCapturing ? "grid grid-cols-2 gap-3" : "flex flex-col gap-4"}>
                       {[
-                        { label: 'CÔNG DANH', icon: '💼', text: result.interpretation.career, theme: 'border-red-200 bg-red-50/50' },
-                        { label: 'TÀI LỘC', icon: '💰', text: result.interpretation.money, theme: 'border-amber-200 bg-amber-50/50' },
-                        { label: 'GIA ĐẠO', icon: '❤️', text: result.interpretation.love, theme: 'border-rose-200 bg-rose-50/50' },
-                        { label: 'SỨC KHỎE', icon: '🌿', text: result.interpretation.health, theme: 'border-emerald-200 bg-emerald-50/50' }
+                        { label: 'CÔNG DANH', icon: <ScrollIcon className="w-6 h-6" />, text: result.interpretation.career, theme: 'border-red-200 bg-red-50/50' },
+                        { label: 'TÀI LỘC', icon: <LuckyBagIcon className="w-6 h-6" />, text: result.interpretation.money, theme: 'border-amber-200 bg-amber-50/50' },
+                        { label: 'GIA ĐẠO', icon: <LotusIcon className="w-6 h-6" />, text: result.interpretation.love, theme: 'border-rose-200 bg-rose-50/50' },
+                        { label: 'SỨC KHỎE', icon: <GourdIcon className="w-6 h-6" />, text: result.interpretation.health, theme: 'border-emerald-200 bg-emerald-50/50' }
                       ].map((item, idx) => (
                         <div key={idx} className={`${item.theme} ${isCapturing ? 'p-3' : 'p-4'} rounded-xl border-2 shadow-sm relative overflow-hidden transition-all hover:shadow-md`}>
                           <h4 className="font-display text-red-800 text-sm flex items-center mb-1 uppercase tracking-tighter">
-                            <span className="mr-2 text-lg">{item.icon}</span> {item.label}
+                            <span className="mr-2">{item.icon}</span> {item.label}
                           </h4>
                           {/* ĐÃ XÓA line-clamp, HIỆN FULL TEXT */}
                           <p className={`text-gray-800 leading-relaxed font-medium ${isCapturing ? 'text-xs' : 'text-sm'}`}>{item.text}</p>
