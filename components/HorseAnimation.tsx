@@ -22,7 +22,7 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({ isRunning, onFin
   }, [isRunning, onFinish, TOTAL_DURATION]);
 
   return (
-    <div className="w-full h-48 relative overflow-hidden flex items-center bg-transparent group">
+    <div className="w-full h-64 relative overflow-hidden flex items-center bg-transparent group">
       
       <style>{`
         @keyframes runAcrossLoop {
@@ -130,12 +130,12 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({ isRunning, onFin
       `}</style>
 
       {/* Track */}
-      <div className="absolute bottom-6 w-full h-2 bg-yellow-900/20 rounded-full overflow-hidden">
+      <div className="absolute bottom-12 w-full h-3 bg-yellow-900/20 rounded-full overflow-hidden">
          <div className="w-full h-full bg-yellow-500/10 animate-pulse"></div>
       </div>
 
       {isRunning ? (
-        <div className="horse-wrapper top-4">
+        <div className="horse-wrapper top-16">
             <div className="horse-body-container">
               <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-lg" xmlns="http://www.w3.org/2000/svg">
                 
@@ -226,11 +226,13 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({ isRunning, onFin
             {/* Dust */}
             <div className="dust-cloud"></div>
             
-            {/* Speech bubble */}
-             <div className="absolute -top-8 -right-6 animate-bounce bg-white border-2 border-red-500 rounded-xl px-3 py-1 shadow-md z-20">
+            {/* Speech bubble - Fixed positioning */}
+             <div className="absolute -top-12 -right-8 animate-bounce bg-white border-2 border-red-500 rounded-xl px-3 py-1 shadow-md z-20 min-w-[120px] text-center">
                  <span className="text-xs text-red-600 font-bold whitespace-nowrap">
                     Lộc tới! Lộc tới! 🧧
                  </span>
+                 {/* Speech Bubble Arrow */}
+                 <div className="absolute bottom-[-6px] left-4 w-3 h-3 bg-white border-b-2 border-r-2 border-red-500 transform rotate-45"></div>
              </div>
         </div>
       ) : (
