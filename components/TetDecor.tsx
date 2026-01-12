@@ -96,3 +96,53 @@ export const GourdIcon: React.FC<{ className?: string }> = ({ className = "" }) 
     <path d="M50 12 Q60 5 65 15" fill="none" stroke="#4CAF50" strokeWidth="2"/>
   </svg>
 );
+
+// --- HIỆU ỨNG RƠI (Falling Decor) ---
+
+export const FallingDecor: React.FC = () => {
+  // Tạo mảng các phần tử rơi ngẫu nhiên
+  const items = Array.from({ length: 20 }).map((_, i) => ({
+    id: i,
+    left: Math.random() * 100, // Vị trí ngẫu nhiên theo chiều ngang
+    delay: Math.random() * 5, // Độ trễ ngẫu nhiên
+    duration: 3 + Math.random() * 4, // Tốc độ rơi
+    type: Math.random() > 0.5 ? 'coin' : 'blossom', // Ngẫu nhiên là tiền hay hoa
+    size: 15 + Math.random() * 20, // Kích thước ngẫu nhiên
+  }));
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      <style>{`
+        @keyframes fallDown {
+          0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+          10% { opacity: 1; }
+          100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+      `}</style>
+      {items.map((item) => (
+        <div
+          key={item.id}
+          className="absolute top-0"
+          style={{
+            left: `${item.left}%`,
+            animation: `fallDown ${item.duration}s linear infinite`,
+            animationDelay: `${item.delay}s`,
+            width: `${item.size}px`,
+            height: `${item.size}px`,
+          }}
+        >
+          {item.type === 'coin' ? (
+             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+               <circle cx="12" cy="12" r="10" fill="#FFD700" stroke="#B8860B" strokeWidth="2"/>
+               <rect x="8" y="8" width="8" height="8" stroke="#B8860B" strokeWidth="1.5" />
+             </svg>
+          ) : (
+             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+               <path d="M12 2C14 6 18 8 22 12C18 16 14 18 12 22C10 18 6 16 2 12C6 8 10 6 12 2" fill="#FFEB3B" />
+             </svg>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};

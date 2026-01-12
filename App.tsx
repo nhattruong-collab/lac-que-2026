@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AppState, UserInput, FortuneResult, FortuneData, FortuneContent } from './types';
 import { FORTUNES } from './constants';
 import { getFortuneInterpretation } from './services/geminiService';
-import { Lantern, BlossomBranch, Coin, ScrollIcon, LuckyBagIcon, LotusIcon, GourdIcon } from './components/TetDecor';
+import { Lantern, BlossomBranch, Coin, ScrollIcon, LuckyBagIcon, LotusIcon, GourdIcon, FallingDecor } from './components/TetDecor';
 import { HorseAnimation } from './components/HorseAnimation';
 import html2canvas from 'html2canvas';
 
@@ -111,28 +111,57 @@ const App: React.FC = () => {
 
   const handleCapture = async () => {
     if (!resultCardRef.current) return;
-    setIsCapturing(true); // Bật chế độ chụp -> Layout sẽ chuyển sang Grid và hiện watermark
+    setIsCapturing(true); // Bật chế độ chụp
 
     try {
-      // Đợi UI cập nhật layout mới (Grid) xong mới chụp
       await new Promise(resolve => setTimeout(resolve, 200));
 
       const canvas = await html2canvas(resultCardRef.current, {
-        scale: 3, // Tăng độ phân giải lên gấp 3 để ảnh nét căng
+        scale: 3,
         backgroundColor: null,
         useCORS: true,
       });
 
-      const image = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = image;
-      link.download = `Loc-Ma-Dao-${userInput.year}-${Date.now()}.png`;
-      link.click();
+      // Tạo tên file
+      const fileName = `Loc-Ma-Dao-${userInput.year}-${Date.now()}.png`;
+
+      // Kiểm tra xem trình duyệt có hỗ trợ Web Share API với Files không
+      // Tính năng này giúp share trực tiếp lên Zalo/Messenger/Instagram thay vì chỉ tải về
+      if (navigator.share) {
+         canvas.toBlob(async (blob) => {
+            if (blob) {
+                const file = new File([blob], fileName, { type: 'image/png' });
+                try {
+                    await navigator.share({
+                        title: 'Gieo Quẻ Mã Đáo Thành Công',
+                        text: 'Năm mới xem thử vận hạn thế nào nè các bạn ơi! 🧧',
+                        files: [file]
+                    });
+                } catch (shareError) {
+                    // Nếu user hủy share hoặc lỗi, fallback về download truyền thống
+                    console.log("Share cancelled or failed, downloading instead.");
+                    const image = canvas.toDataURL("image/png");
+                    const link = document.createElement("a");
+                    link.href = image;
+                    link.download = fileName;
+                    link.click();
+                }
+            }
+         }, 'image/png');
+      } else {
+        // Fallback cho trình duyệt cũ (Desktop)
+        const image = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = image;
+        link.download = fileName;
+        link.click();
+      }
+
     } catch (error) {
       console.error("Capture failed:", error);
       alert("Ui da, máy ảnh bị kẹt! Bạn thử chụp màn hình thủ công nha.");
     } finally {
-      setIsCapturing(false); // Tắt chế độ chụp -> Layout quay về Dọc và ẩn watermark
+      setIsCapturing(false);
     }
   };
 
@@ -143,6 +172,9 @@ const App: React.FC = () => {
       <Lantern className="absolute top-0 right-4 animate-swing origin-top delay-700" />
       <BlossomBranch className="absolute top-10 -left-10 opacity-70" />
       <BlossomBranch className="absolute top-10 -right-10 opacity-70" flipped />
+
+      {/* HIỆU ỨNG MƯA TÀI LỘC - Chỉ hiện khi có kết quả */}
+      {appState === AppState.RESULT && <FallingDecor />}
       
       <header className="text-center z-10 mt-4 mb-8">
         <h1 className="font-display text-5xl md:text-7xl text-tet-gold drop-shadow-[0_2px_10px_rgba(255,215,0,0.5)] mb-2 uppercase">GIEO QUẺ</h1>
@@ -303,7 +335,7 @@ const App: React.FC = () => {
                       ĐANG LƯU...
                     </>
                   ) : (
-                    <>📸 LƯU ẢNH LỘC</>
+                    <>📸 LƯU/SHARE</>
                   )}
                 </button>
               </div>
