@@ -1,3 +1,4 @@
+
 export interface UserInput {
   day: string;
   month: string;
@@ -17,9 +18,18 @@ export interface FortuneData {
 }
 
 export interface FortuneContent {
+  zodiac: string; // Tuổi Can Chi
+  element: string; // Bản mệnh
+  destinyNumber: string; // Con số chủ đạo (Thần số học)
+  personality: string; // Tính cách đặc trưng theo ngày sinh
   career: string;
   money: string;
   love: string;
+  health: string;
+  luckyColor: string;
+  luckyNumber: string;
+  luckyHour: string; // Giờ hoàng đạo cá nhân
+  warning: string;
   poem: string;
 }
 

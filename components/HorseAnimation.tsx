@@ -6,8 +6,8 @@ interface HorseAnimationProps {
 }
 
 export const HorseAnimation: React.FC<HorseAnimationProps> = ({ isRunning, onFinish }) => {
-  // Cấu hình: Chạy 3 vòng, mỗi vòng 2.5 giây -> Tổng 7.5 giây
-  const LAPS = 3;
+  // Cấu hình: Chạy 2 vòng thay vì 3. Tổng thời gian 5s là đẹp để chờ AI.
+  const LAPS = 2;
   const LAP_DURATION_MS = 2500; 
   const TOTAL_DURATION = LAPS * LAP_DURATION_MS;
 
