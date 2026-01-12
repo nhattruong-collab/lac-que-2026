@@ -313,7 +313,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="mt-8 text-yellow-200/40 text-[10px] text-center z-10 flex flex-col gap-1">
-        <p>Luận giải bởi Thần Toán Tử v4.5</p>
+        <p>nhattruong.ngn ft. AI Thần Toán (uy tín luôn)</p>
         <p>© 2026 - Mã Đáo Thành Công - Vạn Sự Như Ý</p>
       </footer>
       
