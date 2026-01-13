@@ -7,7 +7,6 @@ import { Lantern, DecorativeBranch, Coin, ScrollIcon, LuckyBagIcon, LotusIcon, G
 import { HorseAnimation } from './components/HorseAnimation';
 import html2canvas from 'html2canvas';
 
-// Danh sách câu chờ "Gen Z" hài hước, tích cực
 const LOADING_MESSAGES = [
   "Đang call video gấp với Ngọc Hoàng...",
   "Mạng Thiên Đình hơi lag, chờ xíu nha...",
@@ -33,27 +32,40 @@ const App: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [loadingMessage, setLoadingMessage] = useState<string>('Đang kết nối tâm linh...');
   const [isCapturing, setIsCapturing] = useState<boolean>(false);
+  
+  // States cho vòng quay quẻ
+  const [currentShuffleIdx, setCurrentShuffleIdx] = useState(0);
+  const shuffleIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fortunePromiseRef = useRef<Promise<FortuneContent> | null>(null);
   const selectedFortuneRef = useRef<FortuneData | null>(null);
   const resultCardRef = useRef<HTMLDivElement>(null);
 
-  // Effect để đổi câu thoại loading mỗi 2s
+  const dayInputRef = useRef<HTMLInputElement>(null);
+  const monthInputRef = useRef<HTMLInputElement>(null);
+  const yearInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     if (appState === AppState.LOADING_RESULT) {
       interval = setInterval(() => {
         const randomMsg = LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)];
         setLoadingMessage(randomMsg);
-      }, 3500); // Đổi text mỗi 3.5 giây
+      }, 3500);
     }
     return () => clearInterval(interval);
   }, [appState]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setUserInput(prev => ({ ...prev, [name]: value }));
+    const maxLength = name === 'year' ? 4 : 2;
+    const truncatedValue = value.slice(0, maxLength);
+    setUserInput(prev => ({ ...prev, [name]: truncatedValue }));
     setError('');
+    if (truncatedValue.length >= 2) {
+      if (name === 'day') monthInputRef.current?.focus();
+      else if (name === 'month') yearInputRef.current?.focus();
+    }
   };
 
   const validateInput = (): boolean => {
@@ -67,32 +79,32 @@ const App: React.FC = () => {
     return true;
   };
 
-  const startRace = () => {
+  const startShuffling = () => {
     if (!validateInput()) return;
+    setAppState(AppState.SHUFFLING);
     
-    // 1. Chọn quẻ ngẫu nhiên
-    const randomIndex = Math.floor(Math.random() * FORTUNES.length);
-    selectedFortuneRef.current = FORTUNES[randomIndex];
+    // Xoay nhanh quẻ
+    shuffleIntervalRef.current = setInterval(() => {
+      setCurrentShuffleIdx(prev => (prev + 1) % FORTUNES.length);
+    }, 70); 
+  };
 
-    // 2. GỌI AI NGAY LẬP TỨC (Parallel Execution)
-    // Promise này sẽ chạy ngầm trong khi animation đang diễn ra
-    fortunePromiseRef.current = getFortuneInterpretation(userInput, selectedFortuneRef.current);
-    
-    // 3. Bắt đầu animation ngựa chạy
+  const stopShuffling = () => {
+    if (shuffleIntervalRef.current) {
+      clearInterval(shuffleIntervalRef.current);
+      shuffleIntervalRef.current = null;
+    }
+
+    const pickedFortune = FORTUNES[currentShuffleIdx];
+    selectedFortuneRef.current = pickedFortune;
+    fortunePromiseRef.current = getFortuneInterpretation(userInput, pickedFortune);
     setAppState(AppState.RACING);
   };
 
   const handleRaceFinished = async () => {
-    // Set một câu random ngay lập tức khi chuyển màn hình
-    const randomMsg = LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)];
-    setLoadingMessage(randomMsg);
-
-    // Khi ngựa chạy xong (sau 5s), kiểm tra xem AI xong chưa
     setAppState(AppState.LOADING_RESULT);
     try {
       if (fortunePromiseRef.current && selectedFortuneRef.current) {
-        // Nếu AI xong rồi -> await trả về ngay lập tức -> Hiện kết quả luôn
-        // Nếu AI chưa xong -> Chờ nốt phần còn lại -> Hiện loading (lúc này useEffect sẽ chạy để đổi text)
         const interpretation = await fortunePromiseRef.current;
         setResult({ fortune: selectedFortuneRef.current, interpretation });
         setAppState(AppState.RESULT);
@@ -111,26 +123,17 @@ const App: React.FC = () => {
 
   const handleCapture = async () => {
     if (!resultCardRef.current) return;
-    setIsCapturing(true); // Bật chế độ chụp
-
+    setIsCapturing(true);
     try {
-      // Đợi render layout mới lâu hơn chút để đảm bảo font và layout ổn định
       await new Promise(resolve => setTimeout(resolve, 300));
-
       const canvas = await html2canvas(resultCardRef.current, {
-        scale: 4, // Tăng độ phân giải lên 4x (đủ nét cho Facebook/Instagram)
-        backgroundColor: '#fffef0', // Màu nền cứng, tránh trong suốt
+        scale: 4,
+        backgroundColor: '#fffef0',
         useCORS: true,
         logging: false,
-        // Cố gắng lấy chiều rộng tốt hơn nếu đang trên mobile
         windowWidth: resultCardRef.current.scrollWidth > 500 ? resultCardRef.current.scrollWidth : 500
       });
-
-      // Tạo tên file
       const fileName = `Loc-Ma-Dao-${userInput.year}-${Date.now()}.png`;
-
-      // Kiểm tra xem trình duyệt có hỗ trợ Web Share API với Files không
-      // Tính năng này giúp share trực tiếp lên Zalo/Messenger/Instagram thay vì chỉ tải về
       if (navigator.share) {
          canvas.toBlob(async (blob) => {
             if (blob) {
@@ -142,8 +145,6 @@ const App: React.FC = () => {
                         files: [file]
                     });
                 } catch (shareError) {
-                    // Nếu user hủy share hoặc lỗi, fallback về download truyền thống
-                    console.log("Share cancelled or failed, downloading instead.");
                     const image = canvas.toDataURL("image/png");
                     const link = document.createElement("a");
                     link.href = image;
@@ -153,14 +154,12 @@ const App: React.FC = () => {
             }
          }, 'image/png');
       } else {
-        // Fallback cho trình duyệt cũ (Desktop)
         const image = canvas.toDataURL("image/png");
         const link = document.createElement("a");
         link.href = image;
         link.download = fileName;
         link.click();
       }
-
     } catch (error) {
       console.error("Capture failed:", error);
       alert("Ui da, máy ảnh bị kẹt! Bạn thử chụp màn hình thủ công nha.");
@@ -171,23 +170,14 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen font-body text-white overflow-x-hidden relative flex flex-col items-center py-8 px-4">
-      {/* --- CÁC CHI TIẾT TRANG TRÍ MỚI --- */}
-      
-      {/* Góc trên Trái: Hoa Đào (Hồng) */}
       <DecorativeBranch type="peach" position="top-left" className="absolute top-0 left-0 w-32 md:w-64 h-auto z-0 opacity-90" />
-      
-      {/* Góc trên Phải: Hoa Mai (Vàng) */}
       <DecorativeBranch type="apricot" position="top-right" className="absolute top-0 right-0 w-32 md:w-64 h-auto z-0 opacity-90" />
-      
-      {/* Góc dưới: Thêm chút hoa lá nhỏ (ẩn trên mobile bé quá) */}
       <DecorativeBranch type="apricot" position="bottom-left" className="hidden md:block absolute bottom-0 left-0 w-48 h-auto z-0 opacity-60" />
       <DecorativeBranch type="peach" position="bottom-right" className="hidden md:block absolute bottom-0 right-0 w-48 h-auto z-0 opacity-60" />
 
-      {/* Lồng đèn vẫn giữ nhưng chỉnh vị trí xíu cho đỡ vướng hoa */}
       <Lantern className="absolute top-0 left-16 md:left-32 animate-swing origin-top z-1" />
       <Lantern className="absolute top-0 right-16 md:right-32 animate-swing origin-top delay-700 z-1" />
 
-      {/* HIỆU ỨNG MƯA TÀI LỘC - Chỉ hiện khi có kết quả */}
       {appState === AppState.RESULT && <FallingDecor />}
       
       <header className="text-center z-10 mt-12 mb-8 relative">
@@ -197,8 +187,7 @@ const App: React.FC = () => {
       </header>
 
       <main className="w-full max-w-lg z-10 relative">
-        <div className="bg-red-900/90 border-4 border-yellow-500 rounded-2xl p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)] backdrop-blur-sm border-double relative">
-          {/* Góc trang trí */}
+        <div className="bg-red-900/90 border-4 border-yellow-500 rounded-2xl p-6 shadow-[0_0_40px_rgba(0,0,0,0.6)] backdrop-blur-sm border-double relative min-h-[400px] flex flex-col justify-center">
           <div className="absolute top-2 left-2 w-6 h-6 border-t-4 border-l-4 border-yellow-400"></div>
           <div className="absolute top-2 right-2 w-6 h-6 border-t-4 border-r-4 border-yellow-400"></div>
           <div className="absolute bottom-2 left-2 w-6 h-6 border-b-4 border-l-4 border-yellow-400"></div>
@@ -211,43 +200,63 @@ const App: React.FC = () => {
                 <p className="text-xs text-yellow-300/80 italic">Cung cấp sinh nhật để Thần Toán luận giải thiên cơ</p>
               </div>
               <div className="grid grid-cols-3 gap-4">
-                {['day', 'month', 'year'].map(field => (
-                  <div key={field} className="flex flex-col gap-2">
-                    <label className="text-[10px] text-yellow-400 font-bold uppercase text-center">{field === 'day' ? 'Ngày' : field === 'month' ? 'Tháng' : 'Năm'}</label>
+                {['day', 'month', 'year'].map((name) => (
+                  <div key={name} className="flex flex-col gap-2">
+                    <label className="text-[10px] text-yellow-400 font-bold uppercase text-center">
+                      {name === 'day' ? 'Ngày' : name === 'month' ? 'Tháng' : 'Năm'}
+                    </label>
                     <input
+                      ref={name === 'day' ? dayInputRef : name === 'month' ? monthInputRef : yearInputRef}
                       type="number"
-                      name={field}
-                      placeholder="--"
-                      value={(userInput as any)[field]}
+                      name={name}
+                      placeholder={name === 'year' ? '----' : '--'}
+                      value={(userInput as any)[name]}
                       onChange={handleInputChange}
-                      className="bg-red-950 border-2 border-yellow-600 rounded-xl p-4 text-center text-2xl text-yellow-100 placeholder-red-800 focus:outline-none focus:border-yellow-300 shadow-inner"
+                      className="bg-red-950 border-2 border-yellow-600 rounded-xl p-4 text-center text-2xl text-yellow-100 placeholder-red-800 focus:outline-none focus:border-yellow-300 shadow-inner w-full"
                     />
                   </div>
                 ))}
               </div>
               {error && <p className="text-yellow-200 bg-red-800 p-3 rounded-lg text-center text-sm font-bold border-2 border-red-500 animate-shake">{error}</p>}
-              <button onClick={startRace} className="mt-4 bg-gradient-to-r from-yellow-500 via-yellow-300 to-yellow-500 hover:scale-105 text-red-950 font-display font-bold text-3xl py-5 rounded-full shadow-[0_5px_15px_rgba(255,215,0,0.4)] transform transition active:scale-95">🎲 XIN QUẺ</button>
+              <button onClick={startShuffling} className="mt-4 bg-gradient-to-r from-yellow-500 via-yellow-300 to-yellow-500 hover:scale-105 text-red-950 font-display font-bold text-3xl py-5 rounded-full shadow-[0_5px_15px_rgba(255,215,0,0.4)] transform transition active:scale-95">🎲 THỈNH QUẺ</button>
+            </div>
+          )}
+
+          {appState === AppState.SHUFFLING && (
+            <div className="flex flex-col items-center py-8 animate-fadeIn">
+               <h3 className="text-2xl font-display text-yellow-300 mb-12 uppercase tracking-widest text-center animate-pulse">Vạn quẻ tùy duyên...</h3>
+               
+               <HorseAnimation 
+                 isRunning={true} 
+                 onFinish={() => {}} 
+                 mode="run-in-place"
+                 shufflingName={FORTUNES[currentShuffleIdx].name}
+               />
+               
+               <button onClick={stopShuffling} className="mt-8 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white font-display font-bold text-3xl py-6 px-16 rounded-full shadow-[0_10px_30px_rgba(220,38,38,0.5)] border-4 border-yellow-500 transform transition hover:scale-110 active:scale-95 animate-pulse relative z-30">
+                 🛑 DỪNG LẠI (CHỌN QUẺ)
+               </button>
+               <p className="text-xs text-yellow-200/60 mt-4 italic font-bold">"Bấm dừng để bắt lấy quẻ may mắn đang chạy!"</p>
             </div>
           )}
 
           {appState === AppState.RACING && (
-            <div className="py-10 text-center">
-               <h3 className="text-2xl font-display text-yellow-300 mb-6 animate-pulse uppercase tracking-widest">Ngựa đang thỉnh lộc...</h3>
-               <HorseAnimation isRunning={true} onFinish={handleRaceFinished} />
-               <div className="mt-8 flex justify-center gap-2">
-                  {[1, 2, 3].map(i => <div key={i} className="w-3 h-3 bg-yellow-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}></div>)}
+            <div className="py-10 text-center animate-fadeIn">
+               <h3 className="text-2xl font-display text-yellow-300 mb-6 uppercase tracking-widest">Ngựa đang rước lộc về...</h3>
+               <div className="mb-4 text-5xl font-display text-white drop-shadow-[0_5px_15px_rgba(255,255,255,0.4)] bg-red-950/50 py-3 rounded-xl border-2 border-yellow-500/30">
+                  {selectedFortuneRef.current?.name}
                </div>
+               <HorseAnimation isRunning={true} onFinish={handleRaceFinished} mode="run-across" />
             </div>
           )}
 
           {appState === AppState.LOADING_RESULT && (
-            <div className="py-16 flex flex-col items-center justify-center space-y-6">
+            <div className="py-16 flex flex-col items-center justify-center space-y-6 animate-fadeIn">
                <div className="relative w-24 h-24">
                   <div className="absolute inset-0 border-4 border-yellow-500/20 rounded-full"></div>
                   <div className="absolute inset-0 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
                   <div className="absolute inset-0 flex items-center justify-center font-display text-2xl text-yellow-400 font-bold">LINH</div>
                </div>
-               {/* Thông báo cụ thể hơn để người dùng biết tại sao phải đợi */}
                <div className="text-center px-4 w-full">
                   <p key={loadingMessage} className="text-xl font-display text-yellow-300 animate-fadeIn uppercase tracking-wider min-h-[3rem] flex items-center justify-center">
                     {loadingMessage}
@@ -259,12 +268,10 @@ const App: React.FC = () => {
 
           {appState === AppState.RESULT && result && (
             <div className="flex flex-col items-center animate-fadeIn w-full">
-              {/* Thêm ref vào div này để html2canvas chụp đúng phần thẻ kết quả */}
               <div 
                   ref={resultCardRef} 
                   className={`bg-[#fffef0] text-red-950 p-6 rounded-xl shadow-[0_10px_50px_rgba(0,0,0,0.5)] w-full border-4 border-double border-red-800 relative overflow-hidden transition-all ${isCapturing ? 'min-w-[500px] max-w-[600px] mx-auto' : 'w-full'}`}
               >
-                 {/* Họa tiết nền quẻ */}
                  <div className="absolute top-0 right-0 p-2 opacity-10">
                     <Coin className="w-20 h-20" />
                  </div>
@@ -283,10 +290,6 @@ const App: React.FC = () => {
                  </div>
 
                  <div className="space-y-4">
-                    {/* LOGIC QUAN TRỌNG: 
-                        - Mặc định: flex flex-col (Dọc)
-                        - Khi bấm chụp (isCapturing): grid grid-cols-2 (Lưới)
-                    */}
                     <div className={isCapturing ? "grid grid-cols-2 gap-3" : "flex flex-col gap-4"}>
                       {[
                         { label: 'CÔNG DANH', icon: <ScrollIcon className="w-6 h-6" />, text: result.interpretation.career, theme: 'border-red-200 bg-red-50/50' },
@@ -298,7 +301,6 @@ const App: React.FC = () => {
                           <h4 className="font-display text-red-800 text-sm flex items-center mb-1 uppercase tracking-tighter">
                             <span className="mr-2">{item.icon}</span> {item.label}
                           </h4>
-                          {/* ĐÃ XÓA line-clamp, HIỆN FULL TEXT */}
                           <p className={`text-gray-800 leading-relaxed font-medium ${isCapturing ? 'text-xs' : 'text-sm'}`}>{item.text}</p>
                         </div>
                       ))}
@@ -312,7 +314,6 @@ const App: React.FC = () => {
                       ].map((m, i) => (
                         <div key={i} className={`${m.c} p-1.5 rounded-lg border border-current/20 text-center shadow-sm flex flex-col justify-center`}>
                            <span className="text-[8px] uppercase font-black block mb-0.5 opacity-70">{m.l}</span>
-                           {/* Xóa class truncate, thêm break-words và leading-tight để xuống dòng */}
                            <p className="text-[10px] font-black leading-tight break-words">{m.v}</p>
                         </div>
                       ))}
@@ -331,7 +332,6 @@ const App: React.FC = () => {
                        </p>
                     </div>
                     
-                    {/* Watermark khi chụp ảnh - Sẽ chỉ hiện khi isCapturing = true */}
                     {isCapturing && (
                        <div className="text-center opacity-70 text-[10px] font-bold text-red-900 pt-2 border-t border-red-200 mt-2 font-body">
                            ✨ nhattruong.ngn ft. AI Thần Toán (uy tín luôn) ✨

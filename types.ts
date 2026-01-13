@@ -7,7 +7,8 @@ export interface UserInput {
 
 export enum AppState {
   INPUT = 'INPUT',
-  RACING = 'RACING',
+  SHUFFLING = 'SHUFFLING', // Trạng thái đang xoay quẻ
+  RACING = 'RACING', // Giữ lại nếu muốn chuyển cảnh animation sau khi chọn
   LOADING_RESULT = 'LOADING_RESULT',
   RESULT = 'RESULT'
 }
