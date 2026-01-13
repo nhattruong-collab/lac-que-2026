@@ -26,7 +26,7 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({
   loop = false
 }) => {
   const LAPS = 1; // Nếu không loop thì chạy 1 vòng để finish nhanh
-  const LAP_DURATION_MS = 2500; 
+  const LAP_DURATION_MS = 6000; // Tăng thời gian lên 6s để chạy chậm lại
   const TOTAL_DURATION = LAPS * LAP_DURATION_MS;
 
   const [currentFrameIndex, setCurrentFrameIndex] = useState(0);
@@ -47,7 +47,7 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({
     if (isRunning && !imgError) {
       frameInterval = setInterval(() => {
         setCurrentFrameIndex(prev => (prev + 1) % HORSE_FRAMES.length);
-      }, 100);
+      }, 200); // Tăng lên 200ms để chân chuyển động chậm hơn
     } else {
       setCurrentFrameIndex(0);
     }
@@ -74,13 +74,7 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({
           100% { left: 100%; }
         }
         
-        @keyframes gallopBody {
-          0% { transform: translateY(0) rotate(0deg); }
-          25% { transform: translateY(-15px) rotate(-5deg); }
-          50% { transform: translateY(-5px) rotate(0deg); }
-          75% { transform: translateY(-10px) rotate(5deg); }
-          100% { transform: translateY(0) rotate(0deg); }
-        }
+        /* Đã xóa keyframes gallopBody để bỏ hiệu ứng nhảy */
 
         /* Animations cho ngựa SVG (Fallback) */
         @keyframes headBob { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(5deg); } }
@@ -102,7 +96,7 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({
         .horse-body-container {
           width: 100%;
           height: 100%;
-          animation: gallopBody 0.4s ease-in-out infinite;
+          /* Đã xóa animation gallopBody */
           transform-origin: center center;
         }
 
