@@ -33,10 +33,10 @@ const App: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState<string>('Đang kết nối tâm linh...');
   const [isCapturing, setIsCapturing] = useState<boolean>(false);
   
-  // States cho vòng quay quẻ
+  // States cho việc xáo quẻ (shuffling)
   const [currentShuffleIdx, setCurrentShuffleIdx] = useState(0);
   const shuffleIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
+  
   const fortunePromiseRef = useRef<Promise<FortuneContent> | null>(null);
   const selectedFortuneRef = useRef<FortuneData | null>(null);
   const resultCardRef = useRef<HTMLDivElement>(null);
@@ -83,10 +83,11 @@ const App: React.FC = () => {
     if (!validateInput()) return;
     setAppState(AppState.SHUFFLING);
     
-    // Xoay nhanh quẻ
+    // Xoay nhanh tên quẻ để tạo hiệu ứng random
+    if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
     shuffleIntervalRef.current = setInterval(() => {
       setCurrentShuffleIdx(prev => (prev + 1) % FORTUNES.length);
-    }, 70); 
+    }, 80); 
   };
 
   const stopShuffling = () => {
@@ -95,9 +96,14 @@ const App: React.FC = () => {
       shuffleIntervalRef.current = null;
     }
 
+    // Chọn quẻ hiện tại
     const pickedFortune = FORTUNES[currentShuffleIdx];
     selectedFortuneRef.current = pickedFortune;
+    
+    // Bắt đầu gọi AI giải quẻ
     fortunePromiseRef.current = getFortuneInterpretation(userInput, pickedFortune);
+    
+    // Chuyển sang cảnh ngựa chạy về đích (Racing)
     setAppState(AppState.RACING);
   };
 
@@ -169,7 +175,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen font-body text-white overflow-x-hidden relative flex flex-col items-center py-8 px-4">
+    <div className="min-h-screen font-body text-white overflow-x-hidden relative flex flex-col items-center pt-1 pb-8 px-4">
       <DecorativeBranch type="peach" position="top-left" className="absolute top-0 left-0 w-32 md:w-64 h-auto z-0 opacity-90" />
       <DecorativeBranch type="apricot" position="top-right" className="absolute top-0 right-0 w-32 md:w-64 h-auto z-0 opacity-90" />
       <DecorativeBranch type="apricot" position="bottom-left" className="hidden md:block absolute bottom-0 left-0 w-48 h-auto z-0 opacity-60" />
@@ -180,10 +186,10 @@ const App: React.FC = () => {
 
       {appState === AppState.RESULT && <FallingDecor />}
       
-      <header className="text-center z-10 mt-12 mb-8 relative">
-        <h1 className="font-display text-5xl md:text-7xl text-tet-gold drop-shadow-[0_2px_10px_rgba(255,215,0,0.5)] mb-2 uppercase">GIEO QUẺ</h1>
-        <h2 className="font-display text-2xl md:text-3xl text-white tracking-widest uppercase italic">Mã Đáo Thành Công</h2>
-        <p className="text-yellow-200 mt-2 text-sm md:text-base opacity-90 font-bold">"Giải mã vận mệnh - Đón lộc đầu xuân"</p>
+      <header className="text-center z-10 mt-4 mb-3 relative">
+        <h1 className="font-display text-[2.2rem] md:text-[3.5rem] text-tet-gold drop-shadow-[0_2px_10px_rgba(255,215,0,0.5)] leading-none mb-0 uppercase">GIEO QUẺ</h1>
+        <h2 className="font-display text-[1.05rem] md:text-[1.4rem] text-white tracking-widest uppercase italic mt-1">Mã Đáo Thành Công</h2>
+        <p className="text-yellow-200 mt-1 text-xs md:text-sm opacity-90 font-bold">"Giải mã vận mệnh - Đón lộc đầu xuân"</p>
       </header>
 
       <main className="w-full max-w-lg z-10 relative">
@@ -195,7 +201,7 @@ const App: React.FC = () => {
 
           {appState === AppState.INPUT && (
             <div className="flex flex-col gap-8 animate-fadeIn py-4">
-              <div className="text-center">
+              <div className="text-center pt-4">
                 <p className="text-xl mb-2 font-bold text-yellow-100">Khai mở bí mật của bạn</p>
                 <p className="text-xs text-yellow-300/80 italic">Cung cấp sinh nhật để Thần Toán luận giải thiên cơ</p>
               </div>
@@ -223,30 +229,36 @@ const App: React.FC = () => {
           )}
 
           {appState === AppState.SHUFFLING && (
-            <div className="flex flex-col items-center py-8 animate-fadeIn">
-               <h3 className="text-2xl font-display text-yellow-300 mb-12 uppercase tracking-widest text-center animate-pulse">Vạn quẻ tùy duyên...</h3>
+            <div className="flex flex-col items-center py-8 animate-fadeIn w-full overflow-hidden">
+               <h3 className="text-2xl font-display text-yellow-300 mb-8 uppercase tracking-widest text-center animate-pulse">Vạn quẻ tùy duyên...</h3>
                
                <HorseAnimation 
                  isRunning={true} 
                  onFinish={() => {}} 
-                 mode="run-in-place"
+                 mode="run-across"
                  shufflingName={FORTUNES[currentShuffleIdx].name}
+                 loop={true}
                />
                
                <button onClick={stopShuffling} className="mt-8 bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white font-display font-bold text-3xl py-6 px-16 rounded-full shadow-[0_10px_30px_rgba(220,38,38,0.5)] border-4 border-yellow-500 transform transition hover:scale-110 active:scale-95 animate-pulse relative z-30">
-                 🛑 DỪNG LẠI (CHỌN QUẺ)
+                 🛑 DỪNG LẠI
                </button>
-               <p className="text-xs text-yellow-200/60 mt-4 italic font-bold">"Bấm dừng để bắt lấy quẻ may mắn đang chạy!"</p>
             </div>
           )}
 
           {appState === AppState.RACING && (
-            <div className="py-10 text-center animate-fadeIn">
+            <div className="py-10 text-center animate-fadeIn w-full overflow-hidden">
                <h3 className="text-2xl font-display text-yellow-300 mb-6 uppercase tracking-widest">Ngựa đang rước lộc về...</h3>
                <div className="mb-4 text-5xl font-display text-white drop-shadow-[0_5px_15px_rgba(255,255,255,0.4)] bg-red-950/50 py-3 rounded-xl border-2 border-yellow-500/30">
                   {selectedFortuneRef.current?.name}
                </div>
-               <HorseAnimation isRunning={true} onFinish={handleRaceFinished} mode="run-across" />
+               <HorseAnimation 
+                  isRunning={true} 
+                  onFinish={handleRaceFinished} 
+                  mode="run-across" 
+                  shufflingName={selectedFortuneRef.current?.name}
+                  loop={false}
+               />
             </div>
           )}
 
