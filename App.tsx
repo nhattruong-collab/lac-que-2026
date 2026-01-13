@@ -181,8 +181,8 @@ const App: React.FC = () => {
       <DecorativeBranch type="apricot" position="bottom-left" className="hidden md:block absolute bottom-0 left-0 w-48 h-auto z-0 opacity-60" />
       <DecorativeBranch type="peach" position="bottom-right" className="hidden md:block absolute bottom-0 right-0 w-48 h-auto z-0 opacity-60" />
 
-      <Lantern className="absolute top-0 left-16 md:left-28 animate-swing origin-top z-1" />
-      <Lantern className="absolute top-0 right-16 md:right-28 animate-swing origin-top delay-700 z-1" />
+      <Lantern className="absolute top-0 left-16 md:left-16 animate-swing origin-top z-1" />
+      <Lantern className="absolute top-0 right-16 md:right-16 animate-swing origin-top delay-700 z-1" />
 
       {appState === AppState.RESULT && <FallingDecor />}
       
@@ -376,7 +376,7 @@ const App: React.FC = () => {
 
       <footer className="mt-8 text-yellow-200/40 text-[10px] text-center z-10 flex flex-col gap-1">
         <p>nhattruong.ngn ft. AI Thần Toán (uy tín luôn)</p>
-        <p>© 2026 - Mã Đáo Thành Công - Vạn Sự Như Ý</p>
+        <p>App này để giải trí, check nhân phẩm cho vui. Không cổ xúy mê tín dị đoan nha mấy keo! ✨</p>
       </footer>
       
       <style>{`
