@@ -42,7 +42,7 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({
 
   // Logic chuyển đổi frame
   useEffect(() => {
-    let frameInterval: NodeJS.Timeout;
+    let frameInterval: ReturnType<typeof setInterval>;
     
     if (isRunning && !imgError) {
       frameInterval = setInterval(() => {
@@ -66,7 +66,7 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({
   }, [isRunning, onFinish, TOTAL_DURATION, mode, loop]);
 
   return (
-    <div className="w-full h-80 relative overflow-hidden flex items-center bg-transparent group">
+    <div className="w-full h-80 relative overflow-hidden flex items-end pb-3 bg-transparent group">
       
       <style>{`
         @keyframes runAcrossLoop {
@@ -133,12 +133,12 @@ export const HorseAnimation: React.FC<HorseAnimationProps> = ({
       `}</style>
 
       {/* Track */}
-      <div className="absolute bottom-12 w-full h-3 bg-yellow-900/20 rounded-full overflow-hidden">
+      <div className="absolute bottom-[60px] w-full h-3 bg-yellow-900/20 rounded-full overflow-hidden">
          <div className="w-full h-full bg-yellow-500/10 animate-pulse"></div>
       </div>
 
       {isRunning ? (
-        <div className={`horse-wrapper bottom-3 ${mode === 'run-across' ? 'mode-across' : 'mode-in-place'}`}>
+        <div className={`horse-wrapper bottom-0 ${mode === 'run-across' ? 'mode-across' : 'mode-in-place'}`}>
             <div className="horse-body-container">
               {!imgError ? (
                 <img 

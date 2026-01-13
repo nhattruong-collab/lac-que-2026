@@ -181,8 +181,8 @@ const App: React.FC = () => {
       <DecorativeBranch type="apricot" position="bottom-left" className="hidden md:block absolute bottom-0 left-0 w-48 h-auto z-0 opacity-60" />
       <DecorativeBranch type="peach" position="bottom-right" className="hidden md:block absolute bottom-0 right-0 w-48 h-auto z-0 opacity-60" />
 
-      <Lantern className="absolute top-0 left-16 md:left-32 animate-swing origin-top z-1" />
-      <Lantern className="absolute top-0 right-16 md:right-32 animate-swing origin-top delay-700 z-1" />
+      <Lantern className="absolute top-0 left-16 md:left-28 animate-swing origin-top z-1" />
+      <Lantern className="absolute top-0 right-16 md:right-28 animate-swing origin-top delay-700 z-1" />
 
       {appState === AppState.RESULT && <FallingDecor />}
       
