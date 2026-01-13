@@ -189,7 +189,7 @@ const App: React.FC = () => {
       <header className="text-center z-10 mt-4 mb-3 relative">
         <h1 className="font-display text-[2.2rem] md:text-[3.5rem] text-tet-gold drop-shadow-[0_2px_10px_rgba(255,215,0,0.5)] leading-none mb-0 uppercase">GIEO QUẺ</h1>
         <h2 className="font-display text-[1.05rem] md:text-[1.4rem] text-white tracking-widest uppercase italic mt-1">Mã Đáo Thành Công</h2>
-        <p className="text-yellow-200 mt-1 text-xs md:text-sm opacity-90 font-bold">"Giải mã vận mệnh - Đón lộc đầu xuân"</p>
+        <p className="text-yellow-200 mt-1 text-xs md:text-sm opacity-90 font-bold">"Check nhân phẩm - Hốt lộc đầu năm"</p>
       </header>
 
       <main className="w-full max-w-lg z-10 relative">
@@ -202,8 +202,8 @@ const App: React.FC = () => {
           {appState === AppState.INPUT && (
             <div className="flex flex-col gap-8 animate-fadeIn py-4">
               <div className="text-center pt-4">
-                <p className="text-xl mb-2 font-bold text-yellow-100">Khai mở bí mật của bạn</p>
-                <p className="text-xs text-yellow-300/80 italic">Cung cấp sinh nhật để Thần Toán luận giải thiên cơ</p>
+                <p className="text-xl mb-2 font-bold text-yellow-100">Vũ trụ đang gọi tên bạn</p>
+                <p className="text-xs text-yellow-300/80 italic">Nhập sinh nhật để AI Thần Toán "check var" vận mệnh</p>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 {['day', 'month', 'year'].map((name) => (

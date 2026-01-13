@@ -11,21 +11,26 @@ export const getFortuneInterpretation = async (userInput: UserInput, fortune: Fo
     const modelId = 'gemini-3-flash-preview'; 
 
     const prompt = `
-      Gia chủ: ${userInput.day}/${userInput.month}/${userInput.year}. Quẻ: "${fortune.name}".
-      Vai trò: Bạn là "Thần Toán Tử" - bậc thầy thông thiên văn, tường địa lý, thấu hiểu nhân tâm (tuyệt đối không xưng là AI hay máy tính).
+      Khách hàng: Sinh ngày ${userInput.day}/${userInput.month}/${userInput.year}. Quẻ bốc được: "${fortune.name}".
+      Vai trò: Bạn là "AI Thần Toán" phiên bản Gen Z, miệng mồm lanh lợi, "mặn mòi", chuyên check nhân phẩm đầu năm.
       
-      Yêu cầu giải mã JSON:
-      1. zodiac & element: Can chi, ngũ hành.
-      2. destinyNumber: Số chủ đạo theo Pitago.
-      3. personality: 1 câu phán tính cách cực chuẩn, hài hước, mang sắc thái "thầy phán".
-      4. Luận giải (ngắn gọn, vibe gây nghiện, dùng từ ngữ phong thủy/huyền học):
-         - career: Dự báo công danh, ấn tín.
-         - money: Dự báo tài bạch, kho khố.
-         - love: Tình cảm, gia đạo (luận giải khéo léo phù hợp cả người độc thân hoặc đã có gia đình).
-         - health: Sức khỏe, thân thể.
-      5. Chỉ số: luckyColor, luckyNumber, luckyHour (giờ hoàng đạo).
-      6. warning: 1 lời khuyên hoặc cảnh báo thiên cơ (hài hước nhưng thấm).
-      7. poem: Thơ lục bát 4 câu sấm truyền.
+      Yêu cầu cực quan trọng: 
+      - Sử dụng văn phong Gen Z (ví dụ: mlem, chốt đơn, flex, thoát ế, ổn áp, lúa về, đỉnh nóc kịch trần...).
+      - Nội dung mang tính chất GIẢI TRÍ 100%, hài hước, không gây hoang mang, không mang tính chất mê tín dị đoan.
+      - Tuyệt đối không xưng hô kiểu thầy bói truyền thống, hãy xưng là "Tui" hoặc "AI".
+
+      Luận giải JSON chi tiết:
+      1. zodiac & element: Can chi và mệnh (đặt tên hài hước, vd: Tuổi Hổ báo, Mệnh Kim Cương).
+      2. destinyNumber: Số chủ đạo thần số học.
+      3. personality: 1 câu "phán" tính cách cực lầy, trúng tim đen.
+      4. Luận giải (vibe "vui là chính"):
+         - career: Công danh sự nghiệp (kiểu: deadline không dí, sếp thương đồng nghiệp quý).
+         - money: Tài chính (kiểu: túi tiền rủng rỉnh, không lo cháy túi vì Shopee).
+         - love: Tình duyên (kiểu: thoát độc thân bền vững, người yêu cũ muốn quay lại nhưng không cho).
+         - health: Sức khỏe (kiểu: khỏe như ngựa, bớt thức khuya cày phim).
+      5. luckyColor, luckyNumber, luckyHour: Các chỉ số may mắn mang tính "tâm linh vui vẻ".
+      6. warning: "Mật chỉ" hài hước (ví dụ: bớt nghe lời hứa lèo, bớt ăn sập tiệm).
+      7. poem: Thơ lục bát 4 câu phiên bản chế, hài hước, gieo vần chuẩn.
 
       Trả về JSON schema:
       {
@@ -39,7 +44,7 @@ export const getFortuneInterpretation = async (userInput: UserInput, fortune: Fo
       model: modelId,
       contents: prompt,
       config: {
-        temperature: 1.0, 
+        temperature: 0.9, 
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -70,19 +75,19 @@ export const getFortuneInterpretation = async (userInput: UserInput, fortune: Fo
   } catch (error) {
     console.error("Gemini Error:", error);
     return {
-        zodiac: "Tuổi Mèo Con",
-        element: "Mệnh Kim Cương",
-        destinyNumber: "Số 9",
-        personality: "Bề ngoài lạnh lùng, bên trong nhiều tiền (âm phủ).",
-        career: "Deadline dí chạy không kịp thở nhưng lương về là hết mệt.",
-        money: "Tiền vào cửa trước, lẻn ra cửa sau vì Shopee.",
-        love: "Ế trong tư thế ngẩng cao đầu.",
-        health: "Đau lưng mỏi gối vì ngồi code quá nhiều.",
-        luckyColor: "Hồng cánh sen",
-        luckyNumber: "99",
-        luckyHour: "12:00 trưa",
-        warning: "Bớt uống trà sữa lại.",
-        poem: "Đầu năm mua muối cuối năm mua vôi\nTiền tài rủng rỉnh sướng cái thân tôi\nTình duyên phơi phới như hoa nở\nCả năm hạnh phúc cười hỉ hả thôi"
+        zodiac: "Hổ Báo Trường Mẫu Giáo",
+        element: "Mệnh Kim Cương Bất Tử",
+        destinyNumber: "Vô đối",
+        personality: "Nhìn thì hiền khô nhưng hở ra là flex cực mạnh.",
+        career: "Sếp quý sếp thương, deadline tự bay màu.",
+        money: "Tiền vào như nước sông Đà, tiền ra nhỏ giọt như cafe phin.",
+        love: "Tình duyên nở rộ, người yêu cũ khóc ròng vì hối hận.",
+        health: "Khỏe như trâu, chạy như ngựa, ngủ như heo.",
+        luckyColor: "Vàng chanh sả",
+        luckyNumber: "88",
+        luckyHour: "Giờ đi quẩy",
+        warning: "Bớt trà sữa lại không là thành 'bé bự' đó nha!",
+        poem: "Đầu năm ngựa chạy tung tăng\nLộc rơi trúng đầu sướng râm cả người\nTình duyên phơi phới nụ cười\nCả năm no ấm đời tươi lạ kỳ!"
     };
   }
 };
